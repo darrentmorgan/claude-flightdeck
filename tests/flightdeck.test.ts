@@ -41,10 +41,10 @@ import type { Check } from '../types'
 
 // ---------------------------------------------------------------- pure behaviour
 
-test('the gate strip fits its row: one square per column in the terminal, half as many elsewhere', () => {
+test('the gate strip fits its row: one square per column in the terminal, fewer elsewhere', () => {
   expect(stripCells(60, 'terminal', 8)).toBe(60)
-  expect(stripCells(60, 'desktop', 8)).toBe(30)
-  expect(stripCells(61, 'mobile', 8)).toBe(30)
+  expect(stripCells(60, 'desktop', 8)).toBe(37)
+  expect(stripCells(61, 'mobile', 8)).toBe(38)
   expect(stripCells(6, 'desktop', 8)).toBe(8)
 })
 
@@ -515,12 +515,13 @@ test('a full gate strip stays inside the panel on every surface and width', asyn
     await ui.unmount()
     return n
   }
-  // A square is about two columns wide off the terminal, so those surfaces draw about half as many.
+  // A square is about 1.5 columns wide off the terminal, so those surfaces draw fewer.
   for (const cols of [40, 64, 120]) {
     const inTerminal = await squares('terminal', cols)
     for (const surface of ['desktop', 'vscode', 'mobile'] as const) {
       const n = await squares(surface, cols)
-      expect(n * 2 <= inTerminal + 8).toBe(true)
+      expect(n * 1.6 <= inTerminal + 8).toBe(true)
+      expect(n < inTerminal).toBe(true)
       expect(n > 8).toBe(true)
     }
   }

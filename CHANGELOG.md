@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- The gate strip no longer runs past its box in the desktop app. Outside the terminal a square draws about two columns wide, so the strip shows half as many there, and both strips clip at the box edge.
+- The gate strip no longer runs past its box in the desktop app. Outside the terminal a square draws about 1.5 columns wide, so the strip shows fewer there, and both strips clip at the box edge.
 
 ## 0.4.0
 
