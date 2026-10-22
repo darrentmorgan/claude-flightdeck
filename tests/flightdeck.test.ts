@@ -503,3 +503,25 @@ test("the main box shows the last request's time to first token and decode speed
     await ui.unmount()
   }
 })
+
+test('a full gate strip stays inside the panel on every surface and width', async ($, on) => {
+  engine(on)
+  on('tool.check', () => ({ decision: 'allow' }))
+  await $.turn.start({ text: 'go', turnId: 'G1' })
+  for (let i = 0; i < 200; i++) await $.tool.check({ tool: 'Read', input: { file_path: `/f${i}` }, tool_use_id: `g${i}` })
+  const squares = async (surface: 'terminal' | 'desktop' | 'vscode' | 'mobile', cols: number) => {
+    const ui = await $.ui.mount({ ...pane(cols), surface })
+    const n = (await ui.findAll({ type: 'Text', text: /^■$/ })).length
+    await ui.unmount()
+    return n
+  }
+  // A square is about two columns wide off the terminal, so those surfaces draw about half as many.
+  for (const cols of [40, 64, 120]) {
+    const inTerminal = await squares('terminal', cols)
+    for (const surface of ['desktop', 'vscode', 'mobile'] as const) {
+      const n = await squares(surface, cols)
+      expect(n * 2 <= inTerminal + 8).toBe(true)
+      expect(n > 8).toBe(true)
+    }
+  }
+})
