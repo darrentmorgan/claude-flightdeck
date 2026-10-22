@@ -80,6 +80,10 @@ export const normalizeCard = (stored: unknown): AgentCard =>
     stored,
   )
 
+/** One card per agent id, the latest copy last: SendMessage resumes an agent under the id it had. */
+export const uniqueCards = (cards: AgentCard[]): AgentCard[] =>
+  cards.filter((c, i) => !cards.slice(i + 1).some(d => d.id === c.id))
+
 export const normalizeLog = (stored: unknown): LogLine[] =>
   listOf<Record<string, unknown>>(stored).map(l => ({
     at: typeof l.at === 'number' ? l.at : 0,

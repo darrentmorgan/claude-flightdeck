@@ -41,6 +41,7 @@ import {
   momentOf,
   normalize,
   normalizeCard,
+  uniqueCards,
   normalizeGate,
   normalizeLog,
   noteTool,
@@ -98,7 +99,7 @@ async function getGate($: EngineInterface): Promise<Gate> {
   return normalizeGate(await read($, gate))
 }
 async function getCards($: EngineInterface): Promise<AgentCard[]> {
-  return listOf<unknown>(await read($, agents)).map(normalizeCard)
+  return uniqueCards(listOf<unknown>(await read($, agents)).map(normalizeCard))
 }
 async function getLoops($: EngineInterface): Promise<Loop[]> {
   return listOf<Loop>(await read($, loops))
@@ -473,23 +474,30 @@ export const register: Register = (on, options) => {
     if (await isArchitectType($, cfg, e.subagentType)) {
       await update($, architect, a => {
         const x = normalize(DEFAULT_ARCHITECT, a)
-        return { ...x, ids: [...listOf<string>(x.ids), id].slice(-40) }
+        const ids = listOf<string>(x.ids)
+        return ids.includes(id) ? x : { ...x, ids: [...ids, id].slice(-40) }
       })
       await update($, loops, l => listOf<Loop>(l).filter(x => x.id !== id))
       await consultStarted($, cfg, id, e.subagentType.split(':').pop() ?? 'agent')
       return started
     }
+    const cards = await getCards($)
+    const resumed = cards.find(c => c.id === id)
     const card: AgentCard = {
       ...normalizeCard({}),
+      ...resumed,
       id,
       type: e.name ?? e.subagentType,
       model: started.model,
-      description: e.description,
-      spawnedAt: await $.clock.now(),
+      description: resumed?.description || e.description,
+      status: 'running',
+      endedAt: null,
+      answer: '',
+      spawnedAt: resumed?.spawnedAt ?? (await $.clock.now()),
     }
-    await update($, agents, list => [...listOf<unknown>(list).map(normalizeCard), card].slice(-24))
+    await update($, agents, list => uniqueCards([...listOf<unknown>(list).map(normalizeCard), card]).slice(-24))
     await update($, loops, l => listOf<Loop>(l).filter(x => x.id !== id))
-    await say($, shorten(cardTitle(card), 12), `spawned · ${card.type}`, 'info', id)
+    await say($, shorten(cardTitle(card), 12), `${resumed ? 'resumed' : 'spawned'} · ${card.type}`, 'info', id)
     await refreshStatus($, cfg)
     return started
   })

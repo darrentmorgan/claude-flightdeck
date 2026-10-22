@@ -324,6 +324,22 @@ test('subagents become cards, then swimlanes past the card limit; a card expands
   }
 })
 
+test('a resumed subagent keeps one card and one lane', async ($, on) => {
+  engine(on)
+  const ids = ['ra1', 'ra2', 'ra3', 'ra4', 'ra1'] // the last spawn is ra1 resumed via SendMessage
+  on('agent.spawn', () => ({ model: 'claude-sonnet-5-5', agentId: ids.shift() }))
+  await $.turn.start({ text: 'go', turnId: 'R1' })
+  for (const d of ['one', 'two', 'three', 'four']) await $.agent.spawn(spawn('general-purpose', `task ${d}`))
+  await $.turn.complete({ answer: 'ok', durationMs: 10, isAborted: false, turnId: 'R1', agentId: 'ra1', reason: 'answer' })
+  await $.agent.spawn(spawn('general-purpose', 'task one'))
+  for (const surface of ['terminal', 'desktop'] as const) {
+    const ui = await $.ui.mount({ ...pane(64), surface })
+    expect(await ui.find({ text: /1 running · 4 total/ })).toBeUndefined()
+    expect(await ui.find({ text: /4 running · 4 total/ })).toBeDefined()
+    await ui.unmount()
+  }
+})
+
 test('the server-side advisor is read from assistant rows: consulting, then on call', async ($, on) => {
   engine(on)
   await $.turn.start({ text: 'plan it', turnId: 'T2' })
