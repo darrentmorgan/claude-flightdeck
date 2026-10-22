@@ -35,10 +35,18 @@ import {
   trimRecent,
   startConsult,
   stepSpeed,
+  stripCells,
 } from '../hooks/core'
 import type { Check } from '../types'
 
 // ---------------------------------------------------------------- pure behaviour
+
+test('the gate strip fits its row: one square per column in the terminal, half as many elsewhere', () => {
+  expect(stripCells(60, 'terminal', 8)).toBe(60)
+  expect(stripCells(60, 'desktop', 8)).toBe(30)
+  expect(stripCells(61, 'mobile', 8)).toBe(30)
+  expect(stripCells(6, 'desktop', 8)).toBe(8)
+})
 
 test('redaction masks credentials before anything is stored', () => {
   expect(redact('curl -H "Authorization: Bearer abc.def.ghi123" x')).not.toContain('abc.def')

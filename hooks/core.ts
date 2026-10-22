@@ -254,6 +254,10 @@ export const gauge = (pct: number, width: number) => {
   return { on: '▰'.repeat(full), off: '▱'.repeat(width - full) }
 }
 
+/** Squares the gate strip can show in `room` columns. Outside the terminal a square draws about two columns wide. */
+export const stripCells = (room: number, surface: string, min: number) =>
+  Math.max(min, surface === 'terminal' ? room : Math.floor(room / 2))
+
 /** A rate-limit reading as the pane keeps it, its ISO reset time turned into ms since the epoch. */
 export const limitOf = (r: { kind: string; percentUsed: number; resetsAt?: string }) => {
   const at = r.resetsAt ? Date.parse(r.resetsAt) : NaN

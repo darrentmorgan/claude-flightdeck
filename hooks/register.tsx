@@ -55,6 +55,7 @@ import {
   recordCheck,
   settleCheck,
   shorten,
+  stripCells,
   startConsult,
   stepSpeed,
   stepLoop,
@@ -706,7 +707,7 @@ export const register: Register = (on, options) => {
     const verdictColor = (c: Check) =>
       c.verdict === 'rule' ? C.gate : c.verdict === 'cleared' ? C.cleared : c.verdict === 'ask' ? C.amber : C.warn
     const gatePanel = (w: number) => {
-      const strip = g.recent.slice(-Math.max(8, w - 4))
+      const strip = g.recent.slice(-stripCells(w - 4, e.surface, 8))
       const open = v.gateOpen
       return (
         <Box flexDirection="column" borderStyle="round" borderColor={C.gate} paddingX={1} width={w}>
@@ -716,7 +717,7 @@ export const register: Register = (on, options) => {
             </Text>
             <Text dimColor>{`${s.total} checks`}</Text>
           </Box>
-          <Box>
+          <Box overflow="hidden">
             {strip.length === 0 ? <Text color={C.faint}>no checks yet</Text> : null}
             {strip.map(c => (
               <Text color={verdictColor(c)} dimColor={c.inSubagent}>
@@ -1025,7 +1026,7 @@ export const register: Register = (on, options) => {
     if (isMini) {
       const live = [...cards.filter(c => c.status === 'running'), ...cards.filter(c => c.status !== 'running').reverse()].slice(0, 3)
       const counts = ` ${s.rule} allowed · ${s.cleared} ${decider}${s.ask > 0 ? ` · ${s.ask} pending` : ''} · ${s.deny} denied`
-      const strip = g.recent.slice(-Math.max(4, W - cfg.gateLabel.length - 1 - counts.length))
+      const strip = g.recent.slice(-stripCells(W - cfg.gateLabel.length - 1 - counts.length, e.surface, 4))
       const mg = u.pct !== null ? gauge(u.pct, 6) : null
       return (
         <Box flexDirection="column" width={W}>
@@ -1043,7 +1044,7 @@ export const register: Register = (on, options) => {
             {showArchitect ? <Text color={C.arch}>{` · ${cfg.architectLabel.toLowerCase()} ${advising ? 'advising' : a.consults.length}`}</Text> : null}
           </Text>
           {strip.length > 0 ? (
-            <Box>
+            <Box overflow="hidden">
               <Text dimColor>{`${cfg.gateLabel.toLowerCase()} `}</Text>
               {strip.map(c => (
                 <Text color={verdictColor(c)} dimColor={c.inSubagent}>

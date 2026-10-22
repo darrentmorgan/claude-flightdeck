@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- The gate strip no longer runs past its box in the desktop app. Outside the terminal a square draws about two columns wide, so the strip shows half as many there, and both strips clip at the box edge.
+
 ## 0.4.0
 
 - The main box shows the time left until each rate-limit window resets (`5h ▰▱▱▱▱ 19% ↻3h10m`), from the `resetsAt` the session already reports. Below 56 columns the gauges stay as they were. ([#3](https://github.com/scasella/claude-flightdeck/pull/3), thanks @vihrea1337)
